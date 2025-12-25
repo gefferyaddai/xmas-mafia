@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Xmas Mafia</title>
+    <link rel="stylesheet" href="LandingPage.css" />
+</head>
+
+<body>
+
+<div class="snow snow--1"></div>
+<div class="snow snow--2"></div>
+<div class="snow snow--3"></div>
+
+<div id="container">
+    <header id="title">
+        <div class="title-inner">
+            <div class="badge">🎄</div>
+            <div class="title-text">
+                <h1>Mafia: Christmas Edition</h1>
+                <p class="subtitle">North Pole Nights • Roles • Voting • Chaos</p>
+            </div>
+            <div class="badge">🎅</div>
+        </div>
+    </header>
+
+    <main id="bottom-container">
+        <section id="button-container" aria-label="Main menu">
+            <button class="button primary" onclick="window.location.href='CreateGame.html'">Create Game</button>
+            <button class="button" onclick="window.location.href='JoinGame.html'">Join Game</button>
+            <button id="how-to-play" class="button ghost" onclick="window.location.href='HTP.html'">
+                How To Play
+            </button>
+
+        </section>
+    </main>
+
+    <footer class="footer">
+        <span>Made for holiday game nights ✨</span>
+    </footer>
+</div>
+
+<script type="module" src="LandingPage.js"></script>
+
+</body>
+</html>

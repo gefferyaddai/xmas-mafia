@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Join Game</title>
+    <link rel="stylesheet" href="LandingPage.css" />
+</head>
+
+<body>
+<div id="container">
+    <main id="bottom-container">
+        <section class="howto" style="width:min(720px,92vw);">
+            <div class="howto-card">
+                <h2>Join Game</h2>
+
+                <p>Room Code</p>
+                <input id="joinCode" type="text" placeholder="ABCDEF" />
+
+                <p style="margin-top:14px;">Your Name</p>
+                <input id="playerName" type="text" placeholder="Enter username" />
+
+                <button id="joinBtn" class="button primary small" style="margin-top:14px;">
+                    Join
+                </button>
+
+                <button class="button small" style="margin-top:10px;" onclick="window.location.href='LandingPage.html'">
+                    Back
+                </button>
+
+                <p id="err" style="margin-top:10px; opacity:0.9;"></p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script type="module" src="JoinGame.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Role Reveal</title>
+
+    <link rel="stylesheet" href="Game.css" >
+</head>
+<body>
+
+<div id="screen" class="howto-card" style="width:min(720px,92vw); margin: 30px auto;">
+    <h2 id="phaseTitle"></h2>
+    <button id="ttsToggle" class="button small" style="margin-top:10px;">
+        🔊 Narrator: ON
+    </button>
+
+    <div id="story"></div>
+
+    <div id="actionPanel" style="display:none; margin-top:14px;">
+        <p id="actionPrompt"></p>
+        <div id="playerButtons" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <button id="confirmBtn" class="button primary small" style="display:none; margin-top:12px;">Confirm</button>
+    </div>
+
+    <div id="timerPanel" style="display:none; margin-top:14px;">
+        <p id="timerText"></p>
+    </div>
+
+    <button id="continueBtn" class="button primary small" style="margin-top:14px;">
+        Continue
+    </button>
+
+    <p id="readyText" style="margin-top:10px;"></p>
+</div>
+
+
+<script type="module" src="Game.js"></script>
+
+</body>
+</html>

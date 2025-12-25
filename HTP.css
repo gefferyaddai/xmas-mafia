@@ -1,0 +1,81 @@
+.hidden { display: none; }
+
+.howto{
+    width: min(720px, 92vw);
+    margin: 0 auto;
+    padding: 18px 0 0;
+    position: relative;
+    z-index: 2;
+}
+
+.howto-card{
+    border-radius: 18px;
+    padding: 22px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 18px 45px rgba(0,0,0,0.25);
+    backdrop-filter: blur(10px);
+}
+
+.howto-card h2{
+    margin: 0 0 10px;
+    font-size: 26px;
+}
+
+.howto-card p, .howto-card li{
+    font-size: 18px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.9);
+}
+
+.howto-nav{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.button.small{
+    height: 54px;
+    font-size: 18px;
+    border-radius: 14px;
+}
+
+.dots{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.dot{
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.25);
+}
+.dot.active{ background: rgba(255,255,255,0.85); }
+
+.linklike{
+    margin: 10px auto 0;
+    display: block;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.75);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#main1-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#gameCode-container{
+    margin-top: 100px;
+}
+.room-code-input {
+    font-size: 50px;
+}

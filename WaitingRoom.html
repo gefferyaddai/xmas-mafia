@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Waiting Room</title>
+  <link rel="stylesheet" href="LandingPage.css" />
+</head>
+
+<body>
+<div id="container">
+  <main id="bottom-container">
+    <section class="howto" style="width:min(720px,92vw);">
+      <div class="howto-card">
+        <h2>Waiting Room</h2>
+
+        <p>Room Code</p>
+        <input id="roomCodeInput" class="room-code-input" type="text" readonly />
+
+        <p id="countText" style="margin-top:14px;"></p>
+        <div id="playerList" style="margin-top:10px;"></div>
+
+        <button id="startBtn" class="button primary small" style="margin-top:14px; display:none;">
+          Start Game
+        </button>
+
+        <button class="button small" style="margin-top:10px;" onclick="window.location.href='LandingPage.html'">
+          Leave
+        </button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module" src="WaitingRoom.js"></script>
+</body>
+</html>

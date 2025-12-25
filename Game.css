@@ -1,0 +1,17 @@
+/* default */
+#roleCard { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+
+/* role-based glow */
+#roleCard[data-role="Murderer"] { box-shadow: 0 0 24px rgba(255, 0, 0, 0.35); }
+#roleCard[data-role="Santa"] { box-shadow: 0 0 24px rgba(0, 255, 0, 0.25); }
+#roleCard[data-role="HeadElf"] { box-shadow: 0 0 24px rgba(0, 160, 255, 0.25); }
+#roleCard[data-role="Town"] { box-shadow: 0 0 24px rgba(255, 255, 255, 0.15); }
+
+/* small “pop” animation */
+#roleCard[data-role] {
+    animation: popIn 300ms ease-out;
+}
+@keyframes popIn {
+    from { transform: scale(0.96); opacity: 0.6; }
+    to { transform: scale(1); opacity: 1; }
+}

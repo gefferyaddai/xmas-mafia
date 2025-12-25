@@ -1,0 +1,269 @@
+/* Optional: If you want a more festive font, uncomment this for deployment
+@import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Inter:wght@400;600;700&display=swap');
+*/
+
+:root{
+    --red: #c1121f;
+    --deep-red: #8d0f18;
+    --green: #0b6b3a;
+    --deep-green: #064c29;
+    --cream: #fff7e6;
+    --snow: rgba(255,255,255,0.85);
+    --shadow: 0 18px 45px rgba(0,0,0,0.25);
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /* fallback festive look without web fonts */
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+body{
+    overflow-x: hidden;
+    background:
+            radial-gradient(1200px 600px at 20% 0%, rgba(255,255,255,0.35), transparent 60%),
+            radial-gradient(900px 500px at 80% 10%, rgba(255,255,255,0.25), transparent 60%),
+            linear-gradient(180deg, #0b1d3a 0%, #122a52 45%, #0a1630 100%);
+    color: var(--cream);
+}
+
+/* container */
+#container{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Candy-cane header */
+#title{
+    width: 100%;
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+            linear-gradient(135deg,
+            rgba(255,255,255,0.96) 0%,
+            rgba(255,255,255,0.96) 14%,
+            rgba(193,18,31,0.96) 14%,
+            rgba(193,18,31,0.96) 28%,
+            rgba(255,255,255,0.96) 28%,
+            rgba(255,255,255,0.96) 42%,
+            rgba(193,18,31,0.96) 42%,
+            rgba(193,18,31,0.96) 56%,
+            rgba(255,255,255,0.96) 56%,
+            rgba(255,255,255,0.96) 70%,
+            rgba(193,18,31,0.96) 70%,
+            rgba(193,18,31,0.96) 84%,
+            rgba(255,255,255,0.96) 84%,
+            rgba(255,255,255,0.96) 100%
+            );
+    border-bottom: 8px solid rgba(255,255,255,0.35);
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+/* subtle sparkly overlay */
+#title::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.4), transparent 20%),
+            radial-gradient(circle at 70% 40%, rgba(255,255,255,0.35), transparent 18%),
+            radial-gradient(circle at 50% 70%, rgba(255,255,255,0.25), transparent 22%);
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.title-inner{
+    position: relative;
+    z-index: 1;
+    width: min(1100px, 92%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 24px 10px;
+}
+
+.badge{
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: rgba(10,22,48,0.14);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+    font-size: 28px;
+    backdrop-filter: blur(6px);
+}
+
+.title-text h1{
+    margin: 0;
+    color: #0a1630;
+    letter-spacing: 0.5px;
+    font-size: clamp(34px, 5vw, 64px);
+    line-height: 1.05;
+
+    /* If using Google font, you can switch to it here:
+    font-family: "Mountains of Christmas", system-ui, sans-serif;
+    */
+    text-shadow: 0 2px 0 rgba(255,255,255,0.35);
+}
+
+.subtitle{
+    margin: 8px 0 0;
+    color: rgba(10,22,48,0.72);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* main area */
+#bottom-container{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 48px 16px 24px;
+}
+
+#button-container{
+    width: min(520px, 92vw);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
+}
+
+/* buttons */
+.button{
+    width: 100%;
+    height: 92px;
+    border-radius: 18px;
+    border: 2px solid rgba(255,255,255,0.18);
+    cursor: pointer;
+
+    background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+    color: var(--cream);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+
+    box-shadow: 0 16px 34px rgba(0,0,0,0.25);
+    backdrop-filter: blur(10px);
+
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.button::before{
+    content: "";
+    position: absolute;
+    top: -40%;
+    left: -30%;
+    width: 60%;
+    height: 180%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform: rotate(20deg);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.button:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 22px 52px rgba(0,0,0,0.32);
+    border-color: rgba(255,255,255,0.34);
+}
+
+.button:hover::before{
+    opacity: 1;
+}
+
+.button:active{
+    transform: translateY(0px) scale(0.99);
+}
+
+.button.primary{
+    background: linear-gradient(180deg, var(--green), var(--deep-green));
+    border-color: rgba(255,255,255,0.22);
+}
+
+.button.ghost{
+    background: linear-gradient(180deg, rgba(193,18,31,0.92), rgba(141,15,24,0.92));
+}
+
+/* footer */
+.footer{
+    text-align: center;
+    padding: 18px 10px 26px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 600;
+}
+
+/* ------------------ */
+/* Pure CSS snow */
+/* ------------------ */
+.snow{
+    position: fixed;
+    inset: -200px 0 0 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.9;
+}
+
+.snow--1{
+    background-image:
+            radial-gradient(circle, var(--snow) 2px, transparent 3px),
+            radial-gradient(circle, var(--snow) 1px, transparent 2px),
+            radial-gradient(circle, var(--snow) 2px, transparent 3px);
+    background-size: 260px 260px, 180px 180px, 320px 320px;
+    background-position: 0 0, 60px 40px, 120px 80px;
+    animation: snowFall1 12s linear infinite;
+    filter: blur(0.2px);
+}
+
+.snow--2{
+    background-image:
+            radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 2px),
+            radial-gradient(circle, rgba(255,255,255,0.65) 2px, transparent 3px);
+    background-size: 220px 220px, 360px 360px;
+    background-position: 40px 10px, 140px 120px;
+    animation: snowFall2 18s linear infinite;
+    opacity: 0.6;
+}
+
+.snow--3{
+    background-image:
+            radial-gradient(circle, rgba(255,255,255,0.55) 1px, transparent 2px);
+    background-size: 420px 420px;
+    background-position: 0 0;
+    animation: snowFall3 26s linear infinite;
+    opacity: 0.45;
+}
+
+@keyframes snowFall1{
+    from{ transform: translateY(0); }
+    to{ transform: translateY(520px); }
+}
+@keyframes snowFall2{
+    from{ transform: translateY(0); }
+    to{ transform: translateY(720px); }
+}
+@keyframes snowFall3{
+    from{ transform: translateY(0); }
+    to{ transform: translateY(980px); }
+}
+
+/* Mobile tweaks */
+@media (max-width: 520px){
+    #title{ min-height: 210px; }
+    .badge{ display: none; }
+    .button{ height: 82px; font-size: 24px; }
+}
