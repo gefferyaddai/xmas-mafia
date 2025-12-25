@@ -21,9 +21,9 @@ const readyText = qs("readyText");
 
 let selectedTarget = null;
 
-
+// ---------- NARRATOR ----------
 let narratorEnabled = true;
-let lastSpokenKey = ""; // prevents repeating the same line on every Firebase update
+let lastSpokenKey = "";
 
 function htmlToText(html) {
     const tmp = document.createElement("div");
@@ -32,32 +32,26 @@ function htmlToText(html) {
 }
 
 function speak(text, key = "") {
-
     if (!narratorEnabled) return;
     if (!text) return;
 
-    // prevent repeating
     if (key && key === lastSpokenKey) return;
     if (key) lastSpokenKey = key;
 
     try { window.speechSynthesis.resume(); } catch (e) {}
-    // stop previous speech
     window.speechSynthesis.cancel();
 
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.0;     // speed
-    u.pitch = 1.0;    // tone
-    u.volume = 1.0;   // volume
+    u.rate = 1.0;
+    u.pitch = 1.0;
+    u.volume = 1.0;
 
-    // OPTIONAL: pick a nicer English voice if available
     const voices = window.speechSynthesis.getVoices();
     const preferred = voices.find(v => /en/i.test(v.lang) && /female|samantha|zira|google/i.test(v.name));
     if (preferred) u.voice = preferred;
 
     window.speechSynthesis.speak(u);
 }
-
-// load voices on iOS / Chrome
 window.speechSynthesis.onvoiceschanged = () => {};
 
 const ttsToggle = document.getElementById("ttsToggle");
@@ -69,6 +63,63 @@ if (ttsToggle) {
     };
 }
 
+// ---------- READY / CONTINUE (ALIVE ONLY) ----------
+function phaseKey(room) {
+    const round = room.round || 1;
+    return `${room.phase}_${round}`;
+}
+
+async function markPhaseReady(room) {
+    const key = phaseKey(room);
+    await update(ref(db, `rooms/${code}/phaseReady/${key}`), { [pid]: true });
+}
+
+function aliveCount(room) {
+    const alive = room.alive || {};
+    return Object.values(alive).filter(Boolean).length;
+}
+
+function readyCountFor(room) {
+    const key = phaseKey(room);
+    const ready = room.phaseReady?.[key] || {};
+    const alive = room.alive || {};
+    return Object.keys(ready).filter(p => ready[p] && alive[p]).length;
+}
+
+async function advancePhaseOnce(room, nextPhase, extra = {}) {
+    const key = phaseKey(room);
+    if (room._advancedKey === key) return;
+
+    await update(ref(db, `rooms/${code}`), {
+        phase: nextPhase,
+        _advancedKey: key,
+        ...extra
+    });
+}
+
+function showContinueReadyUI(room, nextPhase, label = "Continue") {
+    const alive = aliveCount(room);
+    const ready = readyCountFor(room);
+
+    continueBtn.style.display = "block";
+    continueBtn.disabled = false;
+    continueBtn.textContent = label;
+
+    readyText.textContent = `Ready: ${ready} / ${alive}`;
+
+    continueBtn.onclick = async () => {
+        continueBtn.disabled = true;
+        continueBtn.textContent = "Ready ✅";
+        await markPhaseReady(room);
+    };
+
+    // auto-advance when all alive are ready
+    if (alive > 0 && ready === alive) {
+        advancePhaseOnce(room, nextPhase);
+    }
+}
+
+// ---------- GAME HELPERS ----------
 function isHost(room) {
     return room?.hostId && hid && room.hostId === hid;
 }
@@ -161,135 +212,116 @@ function checkWinner(room) {
     return null;
 }
 
-async function hostAdvance(room, nextPhase, extra = {}) {
-    if (!isHost(room)) return;
-    await update(ref(db, `rooms/${code}`), { phase: nextPhase, ...extra });
-}
-
-// timers
-function startCountdown(endsAt, labelWhenDone) {
-    timerPanel.style.display = "block";
-    const tick = () => {
-        const ms = Math.max(0, endsAt - Date.now());
-        const s = Math.ceil(ms / 1000);
-        timerText.textContent = `Time remaining: ${s}s`;
-        if (ms <= 0) timerText.textContent = labelWhenDone;
-    };
-    tick();
-    const iv = setInterval(() => {
-        tick();
-        if (Date.now() >= endsAt) clearInterval(iv);
-    }, 250);
-}
-
-async function markReady() {
-    continueBtn.disabled = true;
-    continueBtn.textContent = "Ready ✅";
-    await update(ref(db, `rooms/${code}/ready`), { [pid]: true });
-}
-
-
+// ---------- RENDER ----------
 function render(room) {
     hideAll();
 
     const role = myRole(room);
     const phase = room.phase || "roleReveal";
     const amAlive = room.alive?.[pid] ?? true;
+    const round = room.round || 1;
 
+    // role reveal uses old "all players ready"
     if (phase === "roleReveal") {
         phaseTitle.textContent = "Your Role";
         story.innerHTML = "";
+
+        const roleMeta = {
+            Murderer: { title: "🧝 Killer Elf", pill: "EVIL", desc: "Pick one player to sabotage each night. Blend in." },
+            Santa: { title: "🎅 Santa (Doctor)", pill: "GOOD", desc: "Pick one player to protect each night (you may protect yourself)." },
+            HeadElf: { title: "🕵️ Head Elf", pill: "GOOD", desc: "Starting Round 2, inspect one player each night." },
+            Town: { title: "🎶 Town Member", pill: "GOOD", desc: "No night power. Discuss and vote wisely." }
+        };
+        const meta = roleMeta[role] || roleMeta.Town;
+
+        story.innerHTML = `
+      <div id="roleCard" class="role-card" data-role="${role || "Town"}">
+        <div class="role-header">
+          <h3 class="role-title">${meta.title}</h3>
+          <span class="role-pill">${meta.pill}</span>
+        </div>
+        <p class="role-desc">${meta.desc}</p>
+      </div>
+    `;
 
         continueBtn.style.display = "block";
         continueBtn.disabled = false;
         continueBtn.textContent = "Continue";
 
-        const roleMeta = {
-            Murderer: {
-                title: "🧝 Killer Elf",
-                pill: "EVIL",
-                desc: "Pick one player to sabotage each night. Blend in."
-            },
-            Santa: {
-                title: "🎅 Santa (Doctor)",
-                pill: "GOOD",
-                desc: "Pick one player to protect each night (you may protect yourself)."
-            },
-            HeadElf: {
-                title: "🕵️ Head Elf",
-                pill: "GOOD",
-                desc: "Starting Round 2, inspect one player each night."
-            },
-            Town: {
-                title: "🎶 Town Member",
-                pill: "GOOD",
-                desc: "No night power. Discuss and vote wisely."
-            }
+        const total = Object.keys(room.players || {}).length;
+        const rdy = Object.values(room.ready || {}).filter(Boolean).length;
+        readyText.textContent = `Ready: ${rdy} / ${total}`;
+
+        continueBtn.onclick = async () => {
+            continueBtn.disabled = true;
+            continueBtn.textContent = "Ready ✅";
+            await update(ref(db, `rooms/${code}/ready`), { [pid]: true });
         };
 
-        const meta = roleMeta[role] || roleMeta.Town;
-
-        story.innerHTML = `
-  <div id="roleCard" class="role-card" data-role="${role || "Town"}">
-    <div class="role-header">
-      <h3 class="role-title">${meta.title}</h3>
-      <span class="role-pill">${meta.pill}</span>
-    </div>
-    <p class="role-desc">${meta.desc}</p>
-  </div>
-`;
-
-
-        const total = Object.keys(room.players || {}).length;
-        const readyCount = Object.values(room.ready || {}).filter(Boolean).length;
-        readyText.textContent = `Ready: ${readyCount} / ${total}`;
-
-        continueBtn.onclick = markReady;
-
-        if (isHost(room) && total > 0 && readyCount === total) {
-            hostAdvance(room, "intro");
+        // roleReveal needs host to kick off once
+        if (isHost(room) && total > 0 && rdy === total) {
+            update(ref(db, `rooms/${code}`), { phase: "intro" });
         }
         return;
     }
 
-    // intro
+    // spectators
+    if (!amAlive) {
+        phaseTitle.textContent = "👻 You are out";
+        story.innerHTML = `<p>You can watch the story unfold.</p>`;
+
+        if (phase === "night_resolve") {
+            story.innerHTML = formatNightStory(room);
+            speak(htmlToText(story.innerHTML), `morning_${room.lastResult?.resolvedRound || round}`);
+        }
+        if (phase === "day_story") {
+            story.innerHTML = `<p>The workshop gathers to discuss what happened.</p>`;
+            speak(htmlToText(story.innerHTML), `day_story_${round}`);
+        }
+        if (phase === "day_discuss") {
+            story.innerHTML = `<p>Talk it out. Who’s acting suspicious?</p>`;
+            speak(htmlToText(story.innerHTML), `day_discuss_${round}`);
+        }
+        if (phase === "day_vote") {
+            story.innerHTML = `<p>Voting is happening…</p>`;
+        }
+        if (phase === "day_resolve") {
+            story.innerHTML = formatDayStory(room);
+            speak(htmlToText(story.innerHTML), `day_resolve_${round}`);
+        }
+        return;
+    }
+
+    // intro (READY UP -> night_sleep)
     if (phase === "intro") {
         phaseTitle.textContent = "🎄 North Pole Nights";
         story.innerHTML = `<p>The workshop is buzzing… but something feels off.</p>
                        <p>Someone has been sabotaging toys after midnight.</p>
                        <p>Stay sharp. Trust no one.</p>`;
         speak(htmlToText(story.innerHTML), `intro`);
+        showContinueReadyUI(room, "night_sleep");
         return;
     }
 
-    // sleep
+    // night sleep (READY UP -> night_killer)
     if (phase === "night_sleep") {
         phaseTitle.textContent = "🌙 Night Falls";
         story.innerHTML = `<p>Everyone close your eyes…</p><p>The North Pole goes silent.</p>`;
-        speak(htmlToText(story.innerHTML), `night_sleep_${room.round || 1}`);
-
+        speak(htmlToText(story.innerHTML), `night_sleep_${round}`);
+        showContinueReadyUI(room, "night_killer");
         return;
     }
 
-    // dead spectators
-    if (!amAlive) {
-        phaseTitle.textContent = "👻 You are out";
-        story.innerHTML = `<p>You can watch the story unfold.</p>`;
-        if (phase === "night_resolve") story.innerHTML = formatNightStory(room);
-        if (phase === "day_story" || phase === "day_resolve") story.innerHTML = formatDayStory(room);
-        return;
-    }
-
+    // action phases
     if (phase === "night_killer") {
         phaseTitle.textContent = "🧝 Killer Elf Turn";
-        if (role !== "Murderer") {
-            story.innerHTML = `<p>Shhh… stay asleep.</p>`;
-            return;
-        }
+        if (role !== "Murderer") { story.innerHTML = `<p>Shhh… stay asleep.</p>`; return; }
+
         story.innerHTML = `<p>Choose ONE player to sabotage.</p>`;
         actionPanel.style.display = "block";
         actionPrompt.textContent = "Pick a target:";
         renderPlayerChoice(alivePlayers(room, false));
+
         confirmBtn.onclick = async () => {
             if (!selectedTarget) return;
             confirmBtn.disabled = true;
@@ -302,14 +334,13 @@ function render(room) {
 
     if (phase === "night_santa") {
         phaseTitle.textContent = "🎅 Santa Turn";
-        if (role !== "Santa") {
-            story.innerHTML = `<p>Shhh… stay asleep.</p>`;
-            return;
-        }
+        if (role !== "Santa") { story.innerHTML = `<p>Shhh… stay asleep.</p>`; return; }
+
         story.innerHTML = `<p>Choose ONE player to protect (you may protect yourself).</p>`;
         actionPanel.style.display = "block";
         actionPrompt.textContent = "Pick someone to save:";
         renderPlayerChoice(alivePlayers(room, true));
+
         confirmBtn.onclick = async () => {
             if (!selectedTarget) return;
             confirmBtn.disabled = true;
@@ -322,14 +353,13 @@ function render(room) {
 
     if (phase === "night_detective") {
         phaseTitle.textContent = "🕵️ Head Elf Turn";
-        if (role !== "HeadElf") {
-            story.innerHTML = `<p>Shhh… stay asleep.</p>`;
-            return;
-        }
+        if (role !== "HeadElf") { story.innerHTML = `<p>Shhh… stay asleep.</p>`; return; }
+
         story.innerHTML = `<p>Choose ONE player to investigate.</p>`;
         actionPanel.style.display = "block";
         actionPrompt.textContent = "Pick someone to inspect:";
         renderPlayerChoice(alivePlayers(room, false));
+
         confirmBtn.onclick = async () => {
             if (!selectedTarget) return;
             confirmBtn.disabled = true;
@@ -340,37 +370,61 @@ function render(room) {
         return;
     }
 
+    // night resolve (READY UP -> day_story)  ✅ (optional skip)
     if (phase === "night_resolve") {
+        phaseTitle.textContent = "☀️ Morning Report";
         story.innerHTML = formatNightStory(room);
-        speak(htmlToText(story.innerHTML), `morning_${room.lastResult?.resolvedRound || room.round || 1}`);
+        speak(htmlToText(story.innerHTML), `morning_${room.lastResult?.resolvedRound || round}`);
+        showContinueReadyUI(room, "day_story");
         return;
     }
 
-
+    // day story (timer-based OR ready-up) ✅
     if (phase === "day_story") {
         phaseTitle.textContent = "☀️ Day Break";
         story.innerHTML = `<p>The workshop gathers to discuss what happened.</p>`;
-        speak(htmlToText(story.innerHTML), `day_story_${room.round || 1}`);
+        speak(htmlToText(story.innerHTML), `day_story_${round}`);
+
+        // show the timer if present (cinematic)
+        const endsAt = room.timers?.dayStoryEndsAt || 0;
+        if (endsAt) {
+            timerPanel.style.display = "block";
+            const s = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+            timerText.textContent = `Continuing in ${s}s…`;
+        }
+
+        // allow early skip if everyone is ready
+        showContinueReadyUI(room, "day_discuss");
         return;
     }
 
-
+    // discussion (READY UP -> vote) + shows timer (2 min max) ✅
     if (phase === "day_discuss") {
         phaseTitle.textContent = "⏳ Discuss";
         story.innerHTML = `<p>Talk it out. Who’s acting suspicious?</p>`;
-        const endsAt = room.timers?.discussEndsAt || 0;
-        if (endsAt) startCountdown(endsAt, "Discussion over.");
+        speak(htmlToText(story.innerHTML), `day_discuss_${round}`);
 
-        speak(htmlToText(story.innerHTML), `day_discuss_${room.round || 1}`);
+        const endsAt = room.timers?.discussEndsAt || 0;
+        if (endsAt) {
+            timerPanel.style.display = "block";
+            const s = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+            timerText.textContent = `Time remaining: ${s}s`;
+        }
+
+        showContinueReadyUI(room, "day_vote", "Start Vote");
         return;
     }
 
+    // vote phase
     if (phase === "day_vote") {
         phaseTitle.textContent = "🗳️ Vote";
         story.innerHTML = `<p>Vote to eliminate one player.</p>`;
+        speak(htmlToText(story.innerHTML), `day_vote_${round}`);
+
         actionPanel.style.display = "block";
         actionPrompt.textContent = "Vote for:";
         renderPlayerChoice(alivePlayers(room, false));
+
         confirmBtn.onclick = async () => {
             if (!selectedTarget) return;
             confirmBtn.disabled = true;
@@ -378,18 +432,22 @@ function render(room) {
             story.innerHTML = `<p>Vote submitted.</p>`;
             actionPanel.style.display = "none";
         };
-        const endsAt = room.timers?.voteEndsAt || 0;
-        if (endsAt) startCountdown(endsAt, "Voting over.");
 
-        speak(htmlToText(story.innerHTML), `day_vote`);
+        const votes = room.votes?.[String(round)] || {};
+        const alive = room.alive || {};
+        const alivePids = Object.keys(alive).filter(p => alive[p]);
+        const votedAliveCount = alivePids.filter(p => !!votes[p]).length;
+        readyText.textContent = `Votes: ${votedAliveCount} / ${alivePids.length}`;
+
         return;
     }
 
+    // day resolve (READY UP -> night_sleep)
     if (phase === "day_resolve") {
         phaseTitle.textContent = "🎁 Results";
         story.innerHTML = formatDayStory(room);
-
-        speak(htmlToText(story.innerHTML), `day_resolve`);
+        speak(htmlToText(story.innerHTML), `day_resolve_${round}`);
+        showContinueReadyUI(room, "night_sleep");
         return;
     }
 
@@ -406,46 +464,32 @@ function render(room) {
     story.innerHTML = `<p>Waiting for game phase...</p>`;
 }
 
-
+// ---------- SERVER LOGIC (minimal host dependency) ----------
 async function hostTick(room) {
-    if (!isHost(room)) return;
-
     const round = room.round || 1;
     const r = String(round);
     const actions = room.actions?.[r] || {};
 
-    // intro -> night_sleep (once)
-    if (room.phase === "intro" && room._introDone !== true) {
-        await update(ref(db, `rooms/${code}`), { phase: "night_sleep", _introDone: true });
-        return;
-    }
-
-    // night_sleep -> night_killer (once per round)
-    if (room.phase === "night_sleep" && room._sleepDoneRound !== round) {
-        await update(ref(db, `rooms/${code}`), { phase: "night_killer", _sleepDoneRound: round });
-        return;
-    }
-
-    // night_killer -> santa
+    // killer -> santa
     if (room.phase === "night_killer" && actions.killer?.target) {
-        await hostAdvance(room, "night_santa");
+        await advancePhaseOnce(room, "night_santa");
         return;
     }
 
-    // night_santa -> detective (round >=2) else resolve
+    // santa -> detective/resolve
     if (room.phase === "night_santa" && actions.santa?.target) {
-        if (round >= 2) await hostAdvance(room, "night_detective");
-        else await hostAdvance(room, "night_resolve");
+        if (round >= 2) await advancePhaseOnce(room, "night_detective");
+        else await advancePhaseOnce(room, "night_resolve");
         return;
     }
 
     // detective -> resolve
     if (room.phase === "night_detective" && actions.detective?.target) {
-        await hostAdvance(room, "night_resolve");
+        await advancePhaseOnce(room, "night_resolve");
         return;
     }
 
-    // resolve night -> discussion
+    // resolve night -> day_story (set dayStory timer)
     if (room.phase === "night_resolve") {
         if (room.lastResult?.resolvedRound === round) return;
 
@@ -453,48 +497,60 @@ async function hostTick(room) {
         const santaSave = actions.santa?.target || null;
         const killedPid = (killerTarget && killerTarget !== santaSave) ? killerTarget : null;
 
+        const dayStoryEndsAt = Date.now() + 12000;
+
         const updates = {
             lastResult: {
                 resolvedRound: round,
                 killedPid: killedPid || null,
                 savedPid: santaSave || null
             },
-            phase: "day_story"
+            phase: "day_story",
+            phaseReady: null, // reset ready tracking per phase group
+            timers: { ...(room.timers || {}), dayStoryEndsAt }
         };
 
         if (killedPid) updates[`alive/${killedPid}`] = false;
 
         await update(ref(db, `rooms/${code}`), updates);
-
-        const discussEndsAt = Date.now() + 120000;
-        await update(ref(db, `rooms/${code}`), {
-            phase: "day_discuss",
-            timers: { ...(room.timers || {}), discussEndsAt }
-        });
         return;
     }
 
-    // discussion -> vote
-    if (room.phase === "day_discuss") {
-        const endsAt = room.timers?.discussEndsAt || 0;
+    // day_story -> day_discuss (timer fallback)
+    if (room.phase === "day_story") {
+        const endsAt = room.timers?.dayStoryEndsAt || 0;
         if (endsAt && Date.now() >= endsAt) {
-            const voteEndsAt = Date.now() + 45000;
+            const discussEndsAt = Date.now() + 120000;
             await update(ref(db, `rooms/${code}`), {
-                phase: "day_vote",
-                timers: { ...(room.timers || {}), voteEndsAt }
+                phase: "day_discuss",
+                phaseReady: null,
+                timers: { ...(room.timers || {}), discussEndsAt }
             });
         }
         return;
     }
 
-    // vote -> resolve -> win -> next round
+    // day_discuss -> day_vote (timer fallback)
+    if (room.phase === "day_discuss") {
+        const endsAt = room.timers?.discussEndsAt || 0;
+        if (endsAt && Date.now() >= endsAt) {
+            await advancePhaseOnce(room, "day_vote", { phaseReady: null });
+        }
+        return;
+    }
+
+    // day_vote -> day_resolve when all alive voted
     if (room.phase === "day_vote") {
-        const endsAt = room.timers?.voteEndsAt || 0;
-        if (!endsAt || Date.now() < endsAt) return;
-
-        const votes = room.votes?.[r] || {};
         const alive = room.alive || {};
+        const alivePids = Object.keys(alive).filter(p => alive[p]);
+        const votes = room.votes?.[r] || {};
+        const votedAliveCount = alivePids.filter(p => !!votes[p]).length;
 
+        if (votedAliveCount < alivePids.length) return; // wait for all alive votes
+
+        if (room.lastResult?.votedRound === round) return;
+
+        // ✅ remove host-only dependency for resolving votes
         const counts = {};
         for (const [voter, target] of Object.entries(votes)) {
             if (!alive[voter]) continue;
@@ -509,8 +565,9 @@ async function hostTick(room) {
         }
 
         const upd = {
-            lastResult: { ...(room.lastResult || {}), eliminatedPid: eliminatedPid || null },
-            phase: "day_resolve"
+            lastResult: { ...(room.lastResult || {}), eliminatedPid: eliminatedPid || null, votedRound: round },
+            phase: "day_resolve",
+            phaseReady: null
         };
         if (eliminatedPid) upd[`alive/${eliminatedPid}`] = false;
 
@@ -526,13 +583,11 @@ async function hostTick(room) {
             return;
         }
 
-        await update(ref(db, `rooms/${code}`), {
-            round: round + 1,
-            phase: "night_sleep"
-        });
+        // next round
+        await update(ref(db, `rooms/${code}`), { round: round + 1 });
+        return;
     }
 }
-
 
 if (!code || !pid) {
     phaseTitle.textContent = "Missing room info";
