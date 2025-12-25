@@ -1,17 +1,156 @@
-/* default */
-#roleCard { transition: transform 0.3s ease, box-shadow 0.3s ease; }
 
-/* role-based glow */
+
+
+#roleCard { transition: transform 0.3s ease, box-shadow 0.3s ease; }
 #roleCard[data-role="Murderer"] { box-shadow: 0 0 24px rgba(255, 0, 0, 0.35); }
 #roleCard[data-role="Santa"] { box-shadow: 0 0 24px rgba(0, 255, 0, 0.25); }
 #roleCard[data-role="HeadElf"] { box-shadow: 0 0 24px rgba(0, 160, 255, 0.25); }
 #roleCard[data-role="Town"] { box-shadow: 0 0 24px rgba(255, 255, 255, 0.15); }
+#roleCard[data-role] { animation: popIn 300ms ease-out; }
+@keyframes popIn { from { transform: scale(0.96); opacity: 0.6; } to { transform: scale(1); opacity: 1; } }
 
-/* small “pop” animation */
-#roleCard[data-role] {
-    animation: popIn 300ms ease-out;
+
+.game-card{
+    padding: 20px;
 }
-@keyframes popIn {
-    from { transform: scale(0.96); opacity: 0.6; }
-    to { transform: scale(1); opacity: 1; }
+
+.game-topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+}
+
+.game-phase{
+    margin:0;
+    font-size: 26px;
+}
+
+.tts{
+    width: auto;
+    height: 46px;
+    font-size: 16px;
+    padding: 0 14px;
+    border-radius: 14px;
+}
+
+.story{
+    margin-top: 14px;
+    font-size: 18px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.92);
+}
+
+.story p{
+    margin: 10px 0;
+}
+
+/* Role reveal layout */
+.role-card{
+    margin-top: 14px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.06);
+}
+
+.role-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.role-title{
+    font-size: 22px;
+    margin: 0;
+}
+
+.role-pill{
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+}
+
+.role-desc{
+    margin: 8px 0 0;
+    opacity: 0.92;
+}
+
+/* Action area */
+.action-panel{
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.action-prompt{
+    margin: 0 0 10px;
+    opacity: 0.9;
+}
+
+.player-buttons{
+    display:flex;
+    flex-direction:column;
+    gap: 10px;
+}
+
+
+.timer-panel{
+    margin-top: 12px;
+}
+
+.timer-pill{
+    display: inline-flex;
+    align-items:center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.16);
+}
+
+
+.game-footer{
+    margin-top: 10px;
+}
+
+.ready-text{
+    margin-top: 10px;
+    opacity: 0.85;
+}
+
+@media (max-width: 520px){
+
+
+    #title{
+        min-height: 150px;
+    }
+
+
+    #bottom-container{
+        align-items: center;
+        padding: 18px 12px 18px;
+    }
+
+
+    .howto-card{
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+
+    .story{
+        font-size: 16px;
+    }
+
+
+    #ttsToggle{
+        height: 44px;
+        font-size: 15px;
+        padding: 0 12px;
+    }
 }

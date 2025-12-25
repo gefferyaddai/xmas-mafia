@@ -3,39 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Role Reveal</title>
+    <title>Xmas Mafia • Game</title>
 
-    <link rel="stylesheet" href="Game.css" >
+    <!-- Reuse global look + buttons -->
+    <link rel="stylesheet" href="LandingPage.css">
+    <!-- Game-specific tweaks -->
+    <link rel="stylesheet" href="Game.css">
 </head>
+
 <body>
+<div class="snow snow--1"></div>
+<div class="snow snow--2"></div>
+<div class="snow snow--3"></div>
 
-<div id="screen" class="howto-card" style="width:min(720px,92vw); margin: 30px auto;">
-    <h2 id="phaseTitle"></h2>
-    <button id="ttsToggle" class="button small" style="margin-top:10px;">
-        🔊 Narrator: ON
-    </button>
+<div id="container">
+    <header id="title">
+        <div class="title-inner">
+            <div class="badge">🎄</div>
+            <div class="title-text">
+                <h1>North Pole Nights</h1>
+                <p class="subtitle">Stay sharp • Trust no one</p>
+            </div>
+            <div class="badge">🎅</div>
+        </div>
+    </header>
 
-    <div id="story"></div>
+    <main id="bottom-container">
+        <section class="howto" style="width:min(720px,92vw);">
+            <div id="screen" class="howto-card game-card">
+                <div class="game-topbar">
+                    <h2 id="phaseTitle" class="game-phase">Loading…</h2>
 
-    <div id="actionPanel" style="display:none; margin-top:14px;">
-        <p id="actionPrompt"></p>
-        <div id="playerButtons" style="display:flex; flex-direction:column; gap:10px;"></div>
-        <button id="confirmBtn" class="button primary small" style="display:none; margin-top:12px;">Confirm</button>
-    </div>
+                    <button id="ttsToggle" class="button small ghost tts">
+                        🔊 Narrator: ON
+                    </button>
+                </div>
 
-    <div id="timerPanel" style="display:none; margin-top:14px;">
-        <p id="timerText"></p>
-    </div>
+                <div id="story" class="story"></div>
 
-    <button id="continueBtn" class="button primary small" style="margin-top:14px;">
-        Continue
-    </button>
+                <div id="actionPanel" class="action-panel" style="display:none;">
+                    <p id="actionPrompt" class="action-prompt"></p>
+                    <div id="playerButtons" class="player-buttons"></div>
+                    <button id="confirmBtn" class="button primary small" style="display:none; margin-top:12px;">
+                        Confirm
+                    </button>
+                </div>
 
-    <p id="readyText" style="margin-top:10px;"></p>
+                <div id="timerPanel" class="timer-panel" style="display:none;">
+                    <div class="timer-pill">
+                        <span>⏳</span>
+                        <span id="timerText"></span>
+                    </div>
+                </div>
+
+                <div class="game-footer">
+                    <button id="continueBtn" class="button primary small" style="margin-top:14px;">
+                        Continue
+                    </button>
+
+                    <p id="readyText" class="ready-text"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <span>Made for holiday game nights ✨</span>
+    </footer>
 </div>
 
-
 <script type="module" src="Game.js"></script>
-
 </body>
 </html>

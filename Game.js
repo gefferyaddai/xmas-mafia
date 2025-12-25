@@ -204,14 +204,41 @@ function render(room) {
         continueBtn.disabled = false;
         continueBtn.textContent = "Continue";
 
-        const cards = {
-            Murderer: ["🧝 Killer Elf", "Pick one player to sabotage each night. Blend in."],
-            Santa: ["🎅 Santa (Doctor)", "Pick one player to protect each night."],
-            HeadElf: ["🕵️ Head Elf", "Starting Round 2, inspect one player each night."],
-            Town: ["🎶 Town Member", "No night power. Discuss and vote wisely."]
+        const roleMeta = {
+            Murderer: {
+                title: "🧝 Killer Elf",
+                pill: "EVIL",
+                desc: "Pick one player to sabotage each night. Blend in."
+            },
+            Santa: {
+                title: "🎅 Santa (Doctor)",
+                pill: "GOOD",
+                desc: "Pick one player to protect each night (you may protect yourself)."
+            },
+            HeadElf: {
+                title: "🕵️ Head Elf",
+                pill: "GOOD",
+                desc: "Starting Round 2, inspect one player each night."
+            },
+            Town: {
+                title: "🎶 Town Member",
+                pill: "GOOD",
+                desc: "No night power. Discuss and vote wisely."
+            }
         };
-        const [t, desc] = cards[role] || cards.Town;
-        story.innerHTML = `<p style="font-size:22px;"><b>${t}</b></p><p>${desc}</p>`;
+
+        const meta = roleMeta[role] || roleMeta.Town;
+
+        story.innerHTML = `
+  <div id="roleCard" class="role-card" data-role="${role || "Town"}">
+    <div class="role-header">
+      <h3 class="role-title">${meta.title}</h3>
+      <span class="role-pill">${meta.pill}</span>
+    </div>
+    <p class="role-desc">${meta.desc}</p>
+  </div>
+`;
+
 
         const total = Object.keys(room.players || {}).length;
         const readyCount = Object.values(room.ready || {}).filter(Boolean).length;
@@ -316,12 +343,15 @@ function render(room) {
     if (phase === "night_resolve") {
         story.innerHTML = formatNightStory(room);
         speak(htmlToText(story.innerHTML), `morning_${room.lastResult?.resolvedRound || room.round || 1}`);
+        return;
     }
-    if (phase === "day_story" || phase === "day_resolve") {
-        story.innerHTML = phase === "day_story"
-            ? `<p>The workshop gathers to discuss what happened.</p>`
-            : formatDayStory(room);
-        speak(htmlToText(story.innerHTML), `${phase}_${room.round || 1}`);
+
+
+    if (phase === "day_story") {
+        phaseTitle.textContent = "☀️ Day Break";
+        story.innerHTML = `<p>The workshop gathers to discuss what happened.</p>`;
+        speak(htmlToText(story.innerHTML), `day_story_${room.round || 1}`);
+        return;
     }
 
 

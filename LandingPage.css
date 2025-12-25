@@ -1,6 +1,4 @@
-/* Optional: If you want a more festive font, uncomment this for deployment
-@import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Inter:wght@400;600;700&display=swap');
-*/
+
 
 :root{
     --red: #c1121f;
@@ -18,7 +16,7 @@ html, body{
     height: 100%;
     margin: 0;
     padding: 0;
-    /* fallback festive look without web fonts */
+
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
@@ -31,14 +29,14 @@ body{
     color: var(--cream);
 }
 
-/* container */
+
 #container{
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Candy-cane header */
+
 #title{
     width: 100%;
     min-height: 240px;
@@ -68,7 +66,7 @@ body{
     position: relative;
 }
 
-/* subtle sparkly overlay */
+
 #title::after{
     content: "";
     position: absolute;
@@ -111,9 +109,7 @@ body{
     font-size: clamp(34px, 5vw, 64px);
     line-height: 1.05;
 
-    /* If using Google font, you can switch to it here:
-    font-family: "Mountains of Christmas", system-ui, sans-serif;
-    */
+
     text-shadow: 0 2px 0 rgba(255,255,255,0.35);
 }
 
@@ -141,7 +137,7 @@ body{
     align-items: stretch;
 }
 
-/* buttons */
+
 .button{
     width: 100%;
     height: 92px;
@@ -199,7 +195,7 @@ body{
     background: linear-gradient(180deg, rgba(193,18,31,0.92), rgba(141,15,24,0.92));
 }
 
-/* footer */
+
 .footer{
     text-align: center;
     padding: 18px 10px 26px;
@@ -207,9 +203,7 @@ body{
     font-weight: 600;
 }
 
-/* ------------------ */
-/* Pure CSS snow */
-/* ------------------ */
+
 .snow{
     position: fixed;
     inset: -200px 0 0 0;
@@ -261,9 +255,54 @@ body{
     to{ transform: translateY(980px); }
 }
 
-/* Mobile tweaks */
+
 @media (max-width: 520px){
     #title{ min-height: 210px; }
     .badge{ display: none; }
     .button{ height: 82px; font-size: 24px; }
+}
+
+
+.contact-card{
+    width: min(720px, 92vw);
+    margin: 18px auto 0;
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    text-align: center;
+}
+
+.contact-card h3{
+    margin: 0 0 8px;
+    font-size: 22px;
+}
+
+.contact-card p{
+    margin: 8px 0;
+    color: rgba(255,255,255,0.85);
+}
+
+.contact-actions{
+    display:flex;
+    gap: 12px;
+    justify-content:center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.contact-actions .button.small{
+    width: auto;
+    height: 52px;
+    font-size: 18px;
+    padding: 0 18px;
+    border-radius: 14px;
+}
+
+.contact-note{
+    margin-top: 10px;
+    font-size: 14px;
+    opacity: 0.8;
 }
